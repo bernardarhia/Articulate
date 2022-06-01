@@ -1,36 +1,27 @@
 <?php
-
 // enable all php errors
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once __DIR__ . "/vendor/autoload.php";
+include_once 'functions.php';
 
-use App\Request;
 use App\Router;
 
-include_once 'functions.php';
 $router = new Router;
 
-$router->get("/", function () {
-    view("home");
-});
+// STUDENT ROUTES
+require_once __DIR__ . "/routes/user.php";
 
-$router->get("/about", function ($request,  $response) {
-    view("about");
-});
-
-$router->get('/contact', function ($request) {
-    view("users/contact");
-});
+// STUDENT ROUTES
+require_once __DIR__ . "/routes/student.php";
 
 
 
-
-// Handle php file
+// 404 ROUTE
 $router->addNotFoundHandler(function () {
-    $request = new Request;
     $title = "Not Found";
     require_once __DIR__ . "/templates/404.php";
 });
+
 $router->run();

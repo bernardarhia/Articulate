@@ -1,8 +1,12 @@
 <?php
 
+namespace App;
+
+use PDO;
+
 class Schema extends Table
 {
-    static $table;
+    static protected $table;
 
     /**
      * @param string $tableName 
@@ -12,9 +16,14 @@ class Schema extends Table
      */
     static function create(string $tableName, callable $callback)
     {
+        $options = array(
+            PDO::ATTR_PERSISTENT => true,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        );
         self::$table = $tableName;
-        $callback(new Table);
-        return new static;
+        $table = new Table("mysql:host=localhost;dbname=" . self::$db, "root", "", $options);
+        $callback($table);
+        return new static(self::$db);
     }
 
     public function save()
@@ -33,17 +42,25 @@ class Schema extends Table
     }
 }
 
-class Table
+class Table extends PDO
 {
+    static protected $db;
     public $incrementValue = null;
     public function increment($value, $length = 100)
     {
         $this->incrementValue = $value;
     }
+
+    public function string($value, $length = 100)
+    {
+        return $this;
+    }
+    static function connection(string $db)
+    {
+        self::$db = $db;
+        return new static($db);
+    }
 }
 
 
-Schema::create("users", function ($table) {
-    $table->increment("id");
-    $table->string("name");
-})->save();
+Schema::connection("users")->save();

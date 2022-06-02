@@ -3,11 +3,17 @@
 namespace App;
 
 use PDO;
+use stdClass;
 
 class Schema extends Table
 {
     static protected $table;
+    static private $connection;
 
+    //CHECKERS
+    static private $rename = false;
+    static private $createDb = false;
+    static private $create = false;
     /**
      * @param string $tableName 
      * The name of the database table you want to create
@@ -16,19 +22,25 @@ class Schema extends Table
      */
     static function create(string $tableName, callable $callback)
     {
-        $options = array(
-            PDO::ATTR_PERSISTENT => true,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        );
+
         self::$table = $tableName;
-        $table = new Table("mysql:host=localhost;dbname=" . self::$db, "root", "", $options);
+        $table = new Table;
         $callback($table);
-        return new static(self::$db);
+        self::$create = true;
+        return new static;
     }
 
     public function save()
     {
-        print_r(self::$table);
+        $result = new stdClass;
+        self::$connection = new Connector(self::$db);
+        if (self::$rename || self::$createDb) {
+            $stmt = self::$connection->prepare(self::$statement);
+            $result->executed =  $stmt->execute();
+        }
+        self::$statement = null;
+        self::$rename = false;
+        return $result;
     }
 
     /**
@@ -38,17 +50,48 @@ class Schema extends Table
      */
     public function rename(string $from, string $to)
     {
-        $statement = "RENAME IF EXISTS `$from` TO `$to`";
+        self::$statement = "RENAME TABLE `$from` TO `$to`";
+        self::$rename = true;
+        return new static;
+    }
+    /**
+     * @param $db Name of the database you want to create
+     * 
+     */
+    public static function createDatabase(string $db)
+    {
+        self::$statement = "CREATE DATABASE IF NOT EXISTS $db";
+        self::$createDb = true;
+        return new static;
+    }
+
+    /**
+     * @param $db Name of the database you want to drop
+     * 
+     */
+    public static function dropDatabase(string $db)
+    {
+        self::$statement = "DROP DATABASE IF EXISTS $db";
+        self::$createDb = true;
+        return new static;
     }
 }
 
-class Table extends PDO
+class Table
 {
-    static protected $db;
+    static protected $db = null;
+    static protected $statement = null;
     public $incrementValue = null;
-    public function increment($value, $length = 100)
+    public bool $timestamps =  true;
+    private $schema = [];
+
+
+
+    public function increment($value, $length = 11)
     {
+        $this->schema[] = "`$value` INT( $length ) NOT NULL AUTO_INCREMENT";
         $this->incrementValue = $value;
+        return $this;
     }
 
     public function string($value, $length = 100)
@@ -57,10 +100,44 @@ class Table extends PDO
     }
     static function connection(string $db)
     {
+        self::$statement = "CREATE DATABASE IF NOT EXISTS $db; USE $db;";
         self::$db = $db;
-        return new static($db);
+        return new static;
+    }
+    public function primaryKey()
+    {
+        $this->schema[] = "PRIMARY KEY (`$this->incrementValue`)";
+        return $this;
+    }
+
+    public function getSchema()
+    {
+        return $this->schema;
     }
 }
 
 
-Schema::connection("users")->save();
+
+/**
+ * 
+ * 
+ */
+class Connector extends PDO
+{
+    private $connection;
+    public function __construct(string $dbName, string $dbHost = 'localhost', string $dbUser = 'root', string $dbPass = '')
+    {
+        $this->dbName = $dbName;
+        // parent::__construct("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass);
+        parent::__construct("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass);
+        if (is_null($this->dbName))
+            $this->connection = new PDO("mysql:host=$dbHost", $dbUser, $dbPass, null);
+        else
+            $this->connection = new PDO("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass, null);
+        return $this->connection;
+    }
+}
+
+Schema::create("user", function ($table) {
+    $table->string("name")->nullable();
+});

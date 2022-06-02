@@ -2,11 +2,11 @@
 
 namespace App\Database;
 
-use PDO;
-use PDOException;
+use PDO as DBConnector;
 use stdClass;
+use  App\Database\Connector;
 
-class DB extends PDO
+class DB
 {
     private static $table = null;
     private static $query = null;
@@ -25,23 +25,8 @@ class DB extends PDO
         $dbName = "altisend";
         $dbUser = "root";      //by default root is user name.  
         $dbPassword = "";     //password is blank by default  
-        $options = array(
-            PDO::ATTR_PERSISTENT => true,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        );
-
-        try {
-            // create PDO connection
-            self::$connection = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUser, $dbPassword, $options);
-            //$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT); //Suggested to uncomment on production websites
-            self::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); //Suggested to comment on production websites
-            self::$connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-            return self::$connection;
-        } catch (PDOException $e) {
-            //show error
-            echo '<p class="bg-danger">' . $e->getMessage() . '</p>';
-            exit;
-        }
+        self::$connection = new Connector($dbName);
+        return self::$connection;
     }
     public static function insert()
     {
@@ -202,7 +187,7 @@ class DB extends PDO
             $stmt->execute(self::$execute_array);
         }
         if ($stmt->rowCount() > 0) {
-            return $stmt->fetch(PDO::FETCH_OBJ);
+            return $stmt->fetch(DBConnector::FETCH_OBJ);
         } else {
             return new stdClass;
         }

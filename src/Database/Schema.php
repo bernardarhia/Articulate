@@ -4,30 +4,102 @@ namespace App\Database;
 
 
 use stdClass;
-
-
-class Schema extends Table
+// use App\Database\AlterTable;
+trait AlterTable
 {
-    static protected $table;
     static private $connection;
+    static public $tableName;
+    static protected $statement = null;
 
     //CHECKERS
     static private $rename = false;
     static private $createDb = false;
     static private $create = false;
-    /**
-     * @param string $tableName 
-     * The name of the database table you want to create
-     * @param callable $callback A callback function to define the properties of the table you want to create
-     * 
-     */
-    static function create(string $tableName, callable $callback)
+    static protected $db = null;
+    public static function table($tableName, $callback)
+    {
+        self::$tableName = $tableName;
+        // $class  = new AlterTable;
+        $callback(new self);
+        return new static;
+    }
+
+    public function dropColumn($column)
     {
 
-        self::$table = $tableName;
-        $table = new Table;
-        $callback($table);
-        self::$create = true;
+        if (gettype($column) == "string") {
+            $tableName = $this->tableName;
+            self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `$column`";
+        } else if (gettype($column) == "array") {
+            $tableName = self::$tableName;
+            $columns = implode(",DROP COLUMN ", $column);
+            self::$statement = "ALTER TABLE `$tableName` DROP COLUMN $columns";
+        }
+        return new static;
+    }
+
+    public function dropForeignKey($column)
+    {
+        $tableName = $this->tableName;
+        self::$statement = "ALTER TABLE `$tableName` DROP FOREIGN KEY `$column`";
+        return new static;
+    }
+
+    public function dropPrimaryKey()
+    {
+        $tableName = $this->tableName;
+        self::$statement = "ALTER TABLE `$tableName` DROP PRIMARY KEY";
+        return new static;
+    }
+
+    public function dropUniqueKey($column)
+    {
+        $tableName = $this->tableName;
+        self::$statement = "ALTER TABLE `$tableName` DROP UNIQUE `$column`";
+        return new static;
+    }
+
+    public function dropTimestamps()
+    {
+        $tableName = $this->tableName;
+        self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `created_at`";
+        self::$statement .= ", DROP COLUMN `updated_at`";
+        return new static;
+    }
+
+    public function dropSoftDeletes()
+    {
+        $tableName = $this->tableName;
+        self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `deleted_at`";
+        return new static;
+    }
+
+    public static function renameColumn($oldColumn, $newColumn)
+    {
+        $tableName = self::$tableName;
+        self::$statement = "ALTER TABLE `$tableName` CHANGE `$oldColumn` `$newColumn`";
+        return new static;
+    }
+    public static function drop($tableName)
+    {
+        self::$statement = "DROP TABLE $tableName";
+        return new static;
+    }
+    public static function dropIfExists($tableName)
+    {
+        self::$statement = "DROP TABLE IF EXISTS $tableName";
+        return new static;
+    }
+    public static function truncate()
+    {
+        $tableName = self::$tableName;
+        self::$statement = "TRUNCATE TABLE $tableName";
+        return new static;
+    }
+    public static function hasColumn($column)
+    {
+        $tableName = self::$tableName;
+        self::$statement = "SHOW COLUMNS FROM $tableName LIKE '$column'";
         return new static;
     }
 
@@ -42,6 +114,28 @@ class Schema extends Table
         self::$statement = null;
         self::$rename = false;
         return $result;
+    }
+}
+
+class Schema extends Table
+{
+    use AlterTable;
+    static protected $table;
+
+    /**
+     * @param string $tableName 
+     * The name of the database table you want to create
+     * @param callable $callback A callback function to define the properties of the table you want to create
+     * 
+     */
+    static function create(string $tableName, callable $callback)
+    {
+
+        self::$table = $tableName;
+        $table = new Table;
+        $callback($table);
+        self::$create = true;
+        return new static;
     }
 
     /**
@@ -76,23 +170,13 @@ class Schema extends Table
         self::$createDb = true;
         return new static;
     }
-    public static function drop($tableName)
-    {
-        self::$statement = "DROP TABLE IF EXISTS $tableName";
-        return new static;
-    }
-    public static function h()
-    {
-        print_r(__DIR__);
-    }
 }
 
 
 class Table
 {
-    static protected $db = null;
-    static protected $statement = null;
-    public $incrementValue = null;
+
+    public $incrementcolumn = null;
     public bool $timestamps =  true;
     private $itemIndex = null;
     private $is_null = "NOT NULL";
@@ -106,23 +190,32 @@ class Table
     }
 
     // ==============THE DATA TYPES OF THE DATABASE==============
-    public function increment($value, $length = 11)
+
+
+    public function increment($column, $length = 11)
     {
-        $this->itemIndex = $value;
+        $this->itemIndex = $column;
         $this->schema[$this->itemIndex] = "INT($length) AUTO_INCREMENT";
         return $this;
     }
-
-    public function string($value, $length = 100)
+    public function bigIncrements($column, $length = 11)
     {
-        $this->itemIndex = $value;
-        $this->schema[$this->itemIndex] = "VARCHAR($length)";
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "BIGINT($length) AUTO_INCREMENT";
         return $this;
     }
-    public function integer($value, $length = 11)
+
+
+    public function integer($column, $length = 11)
     {
-        $this->itemIndex = $value;
+        $this->itemIndex = $column;
         $this->schema[$this->itemIndex] = "INT($length)";
+        return $this;
+    }
+    public function double($column, $digits, $decimalPoints)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "DOUBLE($digits, $decimalPoints)";
         return $this;
     }
 
@@ -132,32 +225,118 @@ class Table
         return $this;
     }
 
-    public function enum($value, $args)
+    public function string($column, $length = 100)
     {
-        $this->itemIndex = $value;
-        $this->schema[$this->itemIndex] .= " ENUM(" .  implode(", ", $args) . ")";
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "VARCHAR($length)";
         return $this;
     }
-
-    public function text($value)
+    public function text($column)
     {
-        $this->itemIndex = $value;
+        $this->itemIndex = $column;
         $this->schema[$this->itemIndex] = "TEXT";
         return $this;
     }
-    public function bigInteger($value, $length = 11)
+    public function mediumText($column)
     {
-        $this->itemIndex = $value;
-        $this->schema[$this->itemIndex] = "BIGINT($length)";
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "MEDIUMTEXT";
         return $this;
     }
-    public function float($value)
+    public function longText($column)
     {
-        $this->itemIndex = $value;
-        $this->schema[$this->itemIndex] = "FLOAT";
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "LONGTEXT";
+        return $this;
+    }
+    public function bigInteger($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "BIGINT";
+        return $this;
+    }
+    public function mediumInteger($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "MEDIUMINT";
+        return $this;
+    }
+    public function smallInteger($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "SMALLINT";
+        return $this;
+    }
+    public function tinyInteger($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "TINYINT";
         return $this;
     }
 
+    public function float($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "FLOAT";
+        return $this;
+    }
+    public function binary($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "BINARY";
+        return $this;
+    }
+    public function boolean($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "BOOLEAN";
+        return $this;
+    }
+    public function date($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "DATE";
+        return $this;
+    }
+    public function datetime($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "DATETIME";
+        return $this;
+    }
+    public function time($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "TIME";
+        return $this;
+    }
+
+    public function json($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "JSON";
+        return $this;
+    }
+    public function jsonb($column)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "JSONB";
+        return $this;
+    }
+
+    public function char($column, $length = 4)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] = "CHAR($length)";
+        return $this;
+    }
+
+    public function enum($column, $args)
+    {
+        $this->itemIndex = $column;
+        $this->schema[$this->itemIndex] .= " ENUM(" .  implode(", ", $args) . ")";
+        return $this;
+    }
 
     // ==============END OF THE DATA TYPES OF THE DATABASE==============
 
@@ -218,67 +397,31 @@ class Table
         $this->schema["deleted_at"] = "DATETIME DEFAULT NULL";
         return $this;
     }
-    public function timestamp($value)
+    public function timestamp($column)
     {
-        $this->schema[$value] = "DATETIME DEFAULT CURRENT_TIMESTAMP";
+        $this->schema[$column] = "DATETIME DEFAULT CURRENT_TIMESTAMP";
         return $this;
     }
 
-    // public function dropColumn($column)
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP COLUMN `$column`";
-    //     return new static;
-    // }
-
-    // public function dropForeignKey($column)
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP FOREIGN KEY `$column`";
-    //     return new static;
-    // }
-
-    // public function dropPrimaryKey()
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP PRIMARY KEY";
-    //     return new static;
-    // }
-
-    // public function dropUniqueKey($column)
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP UNIQUE `$column`";
-    //     return new static;
-    // }
-
-    // public function dropTimestamps()
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP COLUMN `created_at`";
-    //     self::$statement .= ", DROP COLUMN `updated_at`";
-    //     return new static;
-    // }
-
-    // public function dropSoftDeletes()
-    // {
-    //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP COLUMN `deleted_at`";
-    //     return new static;
-    // }
-
-
-    public function default($value)
+    public function default($column)
     {
-        $this->schema[$this->itemIndex] .= " DEFAULT('$value')";
+        $this->schema[$this->itemIndex] .= " DEFAULT('$column')";
         return $this;
     }
+
+    public function rememberToken()
+    {
+        $this->schema["remember_token"] = "VARCHAR(100) DEFAULT NULL";
+        return $this;
+    }
+
     public function getSchema()
     {
         return $this->schema;
     }
 }
-Schema::create("user", function (Table $table) {
-    $table->integer("id")->primaryKey()->signed()->unsigned();
-    $table->string("email", 20);
-    $table->integer("phone", 12)->unique();
-    $table->foreign('user_id')->references('account', 'id');
-    $table->bigInteger('votes');
-    $table->float('rating');
-    $table->text('comment');
-    print_r($table->getSchema());
+// Schema::table("users", function ($table) {
+// });
+Schema::table("users", function ($table) {
+    $table->dropColumn(["views", "names", "email", "password", "remember_token"]);
 });

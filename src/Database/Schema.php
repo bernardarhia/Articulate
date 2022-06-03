@@ -384,6 +384,7 @@ class Table
     // ==============END OF THE CONSTRAINTS OF THE DATABASE TABLE==============
 
 
+
     public function timestamps()
     {
         $this->timestamps = true;

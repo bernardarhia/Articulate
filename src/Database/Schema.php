@@ -205,6 +205,7 @@ class Table
     // ==============END OF THE CONSTRAINTS OF THE DATABASE TABLE==============
 
 
+
     public function timestamps()
     {
         $this->timestamps = true;
@@ -260,6 +261,7 @@ class Table
     //     self::$statement = "ALTER TABLE `$this->itemIndex` DROP COLUMN `deleted_at`";
     //     return new static;
     // }
+
 
 
     public function default($value)

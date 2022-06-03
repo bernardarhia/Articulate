@@ -1,9 +1,9 @@
 <?php
 
-namespace App;
+namespace App\Database;
 
-use PDO;
 use stdClass;
+
 
 class Schema extends Table
 {
@@ -75,69 +75,20 @@ class Schema extends Table
         self::$createDb = true;
         return new static;
     }
-}
-
-class Table
-{
-    static protected $db = null;
-    static protected $statement = null;
-    public $incrementValue = null;
-    public bool $timestamps =  true;
-    private $schema = [];
-
-
-
-    public function increment($value, $length = 11)
+    public static function drop($tableName)
     {
-        $this->schema[] = "`$value` INT( $length ) NOT NULL AUTO_INCREMENT";
-        $this->incrementValue = $value;
-        return $this;
-    }
-
-    public function string($value, $length = 100)
-    {
-        return $this;
-    }
-    static function connection(string $db)
-    {
-        self::$statement = "CREATE DATABASE IF NOT EXISTS $db; USE $db;";
-        self::$db = $db;
+        self::$statement = "DROP TABLE IF EXISTS $tableName";
         return new static;
     }
-    public function primaryKey()
+    public static function h()
     {
-        $this->schema[] = "PRIMARY KEY (`$this->incrementValue`)";
-        return $this;
-    }
-
-    public function getSchema()
-    {
-        return $this->schema;
+        print_r(__DIR__);
     }
 }
 
-
-
-/**
- * 
- * 
- */
-class Connector extends PDO
-{
-    private $connection;
-    public function __construct(string $dbName, string $dbHost = 'localhost', string $dbUser = 'root', string $dbPass = '')
-    {
-        $this->dbName = $dbName;
-        // parent::__construct("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass);
-        parent::__construct("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass);
-        if (is_null($this->dbName))
-            $this->connection = new PDO("mysql:host=$dbHost", $dbUser, $dbPass, null);
-        else
-            $this->connection = new PDO("mysql:host=$dbHost;dbname=$this->dbName", $dbUser, $dbPass, null);
-        return $this->connection;
-    }
-}
-
-Schema::create("user", function ($table) {
-    $table->string("name")->nullable();
+Schema::create("user", function (Table $table) {
+    $table->increment("id")->primaryKey()->unique();
+    $table->string("email", 20);
+    $table->int("phone", 12)->unique();
+    print_r($table->getSchema());
 });

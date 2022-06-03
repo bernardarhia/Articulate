@@ -1,8 +1,8 @@
 <?php
 
-use App\Schema;
+use App\Database\Schema as DatabaseSchema;
 
 $router->get("/", function () {
     view("home");
-    Schema::connection("altisend")->rename("users", "user1")->save();
+    DatabaseSchema::connection("altisend")->rename("users", "user1")->save();
 });

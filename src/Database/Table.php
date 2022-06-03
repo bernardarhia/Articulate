@@ -25,7 +25,7 @@ class Table
         $this->schema[$this->itemIndex] = "VARCHAR($length)";
         return $this;
     }
-    public function int($value, $length = 11)
+    public function integer($value, $length = 11)
     {
         $this->itemIndex = $value;
         $this->schema[$this->itemIndex] = "INT($length)";
@@ -58,6 +58,23 @@ class Table
     public function unique()
     {
         $this->schema[$this->itemIndex] .= " UNIQUE";
+        return $this;
+    }
+
+    public function signed()
+    {
+        if (strpos($this->schema[$this->itemIndex], "UNSIGNED") !== false) {
+            $this->schema[$this->itemIndex] = str_replace("UNSIGNED", "SIGNED", $this->schema[$this->itemIndex]);
+        } else
+            $this->schema[$this->itemIndex] .= " SIGNED ";
+        return $this;
+    }
+    public function unsigned()
+    {
+        if (strpos($this->schema[$this->itemIndex], "SIGNED") !== false) {
+            $this->schema[$this->itemIndex] = str_replace("SIGNED", "UNSIGNED", $this->schema[$this->itemIndex]);
+        } else
+            $this->schema[$this->itemIndex] .= " UNSIGNED ";
         return $this;
     }
 

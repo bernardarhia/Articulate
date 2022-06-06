@@ -12,9 +12,6 @@ class Connector extends DBConnector
     private $connection;
     public function __construct(string $dbName = null, string $dbHost = 'localhost', string $dbUser = 'root', string $dbPass = '')
     {
-        $env = new Dotenv(__DIR__ . "/../../.env");
-        $env->load();
-
         $this->dbName = $dbName;
         $this->dbHost = $dbHost ?? $_ENV['DB_HOST'];
         $this->dbUser = $dbUser ?? $_ENV['DB_USER'];

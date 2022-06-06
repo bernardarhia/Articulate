@@ -6,6 +6,7 @@ ini_set('display_errors', 1);
 require_once __DIR__ . "/vendor/autoload.php";
 include_once 'functions.php';
 
+
 use App\Router;
 
 $router = new Router;
@@ -15,7 +16,6 @@ require_once __DIR__ . "/routes/user.php";
 
 // STUDENT ROUTES
 require_once __DIR__ . "/routes/student.php";
-
 
 
 // 404 ROUTE

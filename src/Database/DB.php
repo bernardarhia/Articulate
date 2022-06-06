@@ -197,7 +197,7 @@ class DB
      * @param string|int $value
      * @return string|int
      */
-    private static  function getColumnValueType(string | int $value): string | int
+    private static  function getColumnValueType($value)
     {
         if (gettype($value) === "string" && strpos($value, "(") === false & gettype($value) !== "bool") {
             return "'" . $value . "'";

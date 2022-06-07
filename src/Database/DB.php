@@ -5,7 +5,9 @@ namespace App\Database;
 use PDO as DBConnector;
 use stdClass;
 use  App\Database\Connector;
+use App\Dotenv;
 
+include_once __DIR__ . "/Connector.php";
 class DB
 {
     private static $table = null;
@@ -16,17 +18,22 @@ class DB
     private static $order_by = null;
     private static $set = null;
     private static $connection = null;
+    private static $db = null;
     private static $group_by = null;
     private static $execute_array = [];
     private static $query_elements = [' SELECT ', ' FROM ', ' WHERE ', ' LIMIT ', ' ORDER BY ', ' GROUP BY'];
     public function __construct()
     {
-        $dbHost = "localhost";
-        $dbName = "altisend";
-        $dbUser = "root";      //by default root is user name.  
-        $dbPassword = "";     //password is blank by default  
-        self::$connection = new Connector($dbName);
-        return self::$connection;
+
+        $env = new Dotenv(__DIR__ . '/../../.env');
+        $env->load();
+        self::$db = !self::$db || is_null(self::$db) ? $_ENV['DB_NAME'] : self::$db;
+        self::$connection = new Connector(self::$db);
+    }
+    static function connection($dbName)
+    {
+        self::$db = $dbName;
+        return new static;
     }
     public static function insert()
     {
@@ -155,14 +162,23 @@ class DB
         return new static;
     }
 
-    public function result(): string
+    public function result()
     {
 
         // add limit and order by
         if (!empty(self::$group_by)) self::$query .= self::$query_elements[5] . "('" . self::$group_by . "')";
         if (!empty(self::$order_by)) self::$query .= self::$order_by;
         if (!empty(self::$limit)) self::$query .= self::$query_elements[3] . self::$limit;
-        return self::$query;
+
+        $stmt = self::$connection->prepare(self::$query);
+        if (count(self::$execute_array) < 1) {
+            $stmt->execute();
+        } else {
+            $stmt->execute(self::$execute_array);
+        }
+        return $stmt->fetchAll(DBConnector::FETCH_OBJ);
+
+        // return self::$query;
     }
 
 
@@ -192,6 +208,35 @@ class DB
             return new stdClass;
         }
     }
+
+    static function raw($query, $data = [])
+    {
+        $stmt = self::$connection->prepare($query);
+        if (is_array($data) && count($data) > 0) {
+            // Check if data is a sequential array
+            if (array_values($data) === $data) {
+                $param_key = 0;
+                preg_match_all("/\?/", $query, $matches);
+                foreach ($matches[0] as $key => $value) {
+                    $param_key++;
+                    $stmt->bindParam($param_key, $value);
+                }
+                $param_key = 0;
+                $stmt->execute();
+            } else {
+                // Check if data is an associative array(Group data by key)
+                foreach ($data as $key => $value) self::$execute_array[$key] = $value;
+                $stmt->execute(self::$execute_array);
+            }
+            print_r($stmt->fetch());
+        }
+        if (is_callable($data)) {
+        }
+    }
+
+    public function last()
+    {
+    }
     /**
      * 
      * @param string|int $value
@@ -209,4 +254,24 @@ class DB
     {
         return self::$connection;
     }
+    static function beginTransaction()
+    {
+        self::$connection->beginTransaction();
+    }
+    static function commit()
+    {
+        self::$connection->commit();
+    }
+    static function rollback()
+    {
+        self::$connection->rollback();
+    }
+    static function lastInsertId()
+    {
+        return self::$connection->lastInsertId();
+    }
 }
+
+// $results = DB::select("id", "user_id")->from("accounts")->where("user_id", "=", 3)->result();
+$results = DB::connection("altisend")->raw("select id from accounts where id = ? ", [1]);
+print_r($results);

@@ -9,7 +9,7 @@ class Table extends AlterTable
 {
     // public bool $timestamps =  true;
     private $itemIndex = null;
-    protected $is_null = "NOT NULL";
+    protected static $is_null = "NOT NULL";
     protected $schema = [];
 
     static function connection(string $db)
@@ -49,7 +49,7 @@ class Table extends AlterTable
         return $this;
     }
 
-    public function primary()
+    public function primaryKey()
     {
         $this->schema[$this->itemIndex] .= "PRIMARY KEY ";
         return $this;
@@ -310,5 +310,14 @@ class Table extends AlterTable
     public function getSchema()
     {
         return $this->schema;
+    }
+    public static function hasTable($tableName)
+    {
+        self::$connection =
+            self::$statement = "SHOW TABLES LIKE '$tableName'";
+        print_r(self::$connection);
+        // $stmt = self::$connection->prepare(self::$statement);
+        // $stmt->execute();
+        // print_r($stmt->rowCount());
     }
 }

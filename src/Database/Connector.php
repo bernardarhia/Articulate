@@ -10,9 +10,12 @@ include_once __DIR__ . "/../Dotenv.php";
 class Connector extends DBConnector
 {
     private $connection;
-    public function __construct(string $dbName = null, string $dbHost = 'localhost', string $dbUser = 'root', string $dbPass = '')
+    public function __construct(string $dbName = null, string $dbHost = null, string $dbUser = null, string $dbPass = '')
     {
+        $env = new Dotenv(__DIR__ . '/../../.env');
+        $env->load();
         $this->dbName = $dbName;
+        $this->dbName = !$dbName || is_null($dbName) ? $_ENV['DB_NAME'] : $dbName;
         $this->dbHost = $dbHost ?? $_ENV['DB_HOST'];
         $this->dbUser = $dbUser ?? $_ENV['DB_USER'];
         $this->dbPass = $dbPass ?? $_ENV['DB_PASS'];

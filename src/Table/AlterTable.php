@@ -14,9 +14,11 @@ class AlterTable
     static protected $createDb = false;
     static protected $dropDatabase = false;
     static protected $create = false;
+    static protected $alter = false;
     static protected $db = null;
     public static function table($tableName, $callback)
     {
+        self::$alter = true;
         self::$tableName = $tableName;
         $callback(new self);
         return new static;
@@ -27,6 +29,8 @@ class AlterTable
 
         if (gettype($column) == "string") {
             $tableName = self::$tableName;
+            // alter table if not exists $tableName drop column $column;
+
             self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `$column`";
         } else if (gettype($column) == "array") {
             $tableName = self::$tableName;
@@ -59,7 +63,7 @@ class AlterTable
 
     public function dropTimestamps()
     {
-        $tableName = $this->tableName;
+        $tableName = self::$tableName;
         self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `created_at`";
         self::$statement .= ", DROP COLUMN `updated_at`";
         return new static;
@@ -88,20 +92,16 @@ class AlterTable
         self::$statement = "DROP TABLE IF EXISTS $tableName";
         return new static;
     }
-    public static function truncate($tableName)
+    public function truncate()
     {
-        self::$statement = "TRUNCATE TABLE $tableName";
+
+        self::$statement = "TRUNCATE TABLE " . self::$tableName;
         return new static;
     }
-    public static function hasColumn($column)
+    public function hasColumn($column)
     {
         $tableName = self::$tableName;
         self::$statement = "SHOW COLUMNS FROM $tableName LIKE '$column'";
-        return new static;
-    }
-    public static function hasTable($tableName)
-    {
-        self::$statement = "SHOW TABLES LIKE '$tableName'";
         return new static;
     }
 }

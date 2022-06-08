@@ -211,27 +211,29 @@ class DB
 
     static function raw($query, $data = [])
     {
-        $stmt = self::$connection->prepare($query);
-        if (is_array($data) && count($data) > 0) {
-            // Check if data is a sequential array
-            if (array_values($data) === $data) {
-                $param_key = 0;
-                preg_match_all("/\?/", $query, $matches);
-                foreach ($matches[0] as $key => $value) {
-                    $param_key++;
-                    $stmt->bindParam($param_key, $value);
-                }
-                $param_key = 0;
-                $stmt->execute();
-            } else {
-                // Check if data is an associative array(Group data by key)
-                foreach ($data as $key => $value) self::$execute_array[$key] = $value;
-                $stmt->execute(self::$execute_array);
-            }
-            print_r($stmt->fetch());
-        }
-        if (is_callable($data)) {
-        }
+        // $stmt = self::$connection->prepare($query);
+        // if (is_array($data) && count($data) > 0) {
+        //     // Check if data is a sequential array
+        //     if (array_values($data) === $data) {
+        //         $param_key = 0;
+        //         preg_match_all("/\?/", $query, $matches);
+        //         print_r($matches);
+        //         foreach ($matches[0] as $key => $value) {
+        //             $param_key++;
+        //             $stmt->bindParam($param_key, $value);
+        //         }
+        //         $param_key = 0;
+        //         $stmt->execute();
+        //     } else {
+        //         // Check if data is an associative array(Group data by key)
+        //         foreach ($data as $key => $value) self::$execute_array[$key] = $value;
+        //         $stmt->execute(self::$execute_array);
+        //     }
+        //     print_r($stmt->fetch());
+        // }
+        print_r(self::$connection);
+        // if (is_callable($data)) {
+        // }
     }
 
     public function last()
@@ -273,5 +275,6 @@ class DB
 }
 
 // $results = DB::select("id", "user_id")->from("accounts")->where("user_id", "=", 3)->result();
-$results = DB::connection("altisend")->raw("select id from accounts where id = ? ", [1]);
+DB::beginTransaction();
+$results = DB::raw("select id from accounts where type = :type ", ["type" => "primary"]);
 print_r($results);

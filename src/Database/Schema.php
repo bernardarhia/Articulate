@@ -25,7 +25,7 @@ class Schema extends Table
         self::$create = true;
 
         self::$Schema = $table->schema;
-        return new static;
+        return self::save();
     }
 
     /**
@@ -33,11 +33,11 @@ class Schema extends Table
      * @param $from The current database table name you want to change
      * @param $to The name of the new table you want to change the name to
      */
-    public function rename(string $from, string $to)
+    public static function rename(string $from, string $to)
     {
         self::$statement = "RENAME TABLE `$from` TO `$to`";
         self::$rename = true;
-        return new static;
+        return self::save();
     }
     /**
      * @param $db Name of the database you want to create
@@ -47,8 +47,7 @@ class Schema extends Table
     {
         self::$statement = "CREATE DATABASE IF NOT EXISTS $db";
         self::$createDb = true;
-        // return self::$table->save();
-        return new static;
+        return self::save();
     }
 
     /**
@@ -60,18 +59,18 @@ class Schema extends Table
         self::$dropDatabase = true;
         self::$statement = "DROP DATABASE IF EXISTS $db";
         self::$createDb = true;
-        return new static;
+        return self::save();
     }
     public function schemaCollect()
     {
         return self::$Schema;
     }
 
-    public function save()
+    public static function save()
     {
         $result = new \stdClass;
         self::$connection = new Connector(self::$db);
-        if (self::$rename || self::$createDb || self::$dropDatabase) {
+        if (self::$rename || self::$createDb || self::$dropDatabase || self::$alter) {
             $stmt = self::$connection->prepare(self::$statement);
             $result->executed =  $stmt->execute();
             self::reset();
@@ -83,7 +82,7 @@ class Schema extends Table
             // echo self::$statement;
             foreach (self::$Schema as $key => $value) {
                 if (strpos($value, "NULL") === false)
-                    self::$statement .= $key . " " . trim($value) . " " . $this->is_null  . ",\n";
+                    self::$statement .= $key . " " . trim($value) . " " . self::$is_null  . ",\n";
                 else
                     self::$statement .= $key . " " . trim($value) . ",\n";
             }
@@ -101,24 +100,10 @@ class Schema extends Table
         self::$rename = false;
     }
 }
-
-$result = Schema::connection("test1")->create("users", function ($table) {
-    $table->increment("id")->primary();
-    $table->string("name");
+// $renamed = Schema::rename("users", "users1");
+$result = Schema::create("acc", function ($table) {
+    $table->increment("id")->primaryKey();
     $table->string("email");
-    $table->string("password");
-    $table->string("role")->nullable();
-    $table->string("status")->nullable();
-    $table->timestamps();
-})->create("account", function ($table) {
-    $table->increment("id")->primary();
-    $table->string("name");
-    $table->string("email");
-    $table->string("password");
-    $table->string("role")->nullable();
-    $table->string("status")->nullable();
-    $table->timestamps();
-})->save();
+    // print_r($table);
+});
 print_r($result);
-Schema::dropDatabase("test1")->save();
-Schema::createDatabase("test1")->save();

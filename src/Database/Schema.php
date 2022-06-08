@@ -2,10 +2,12 @@
 
 namespace App\Database;
 
+use App\Command\Execute;
 use App\Table\Table;
 
 include_once __DIR__ . "/../Table/Table.php";
 include_once __DIR__ . "/../Database/Connector.php";
+include_once __DIR__ . "/../Commands/Execute.php";
 class Schema extends Table
 {
     static private $Schema;
@@ -35,7 +37,7 @@ class Schema extends Table
      */
     public static function rename(string $from, string $to)
     {
-        self::$statement = "RENAME TABLE `$from` TO `$to`";
+        self::$statement = self::RENAME . " TABLE `$from` TO `$to`";
         self::$rename = true;
         return self::save();
     }
@@ -45,7 +47,7 @@ class Schema extends Table
      */
     public static function createDatabase(string $db)
     {
-        self::$statement = "CREATE DATABASE IF NOT EXISTS $db";
+        self::$statement = self::CREATE . " DATABASE IF NOT EXISTS $db";
         self::$createDb = true;
         return self::save();
     }
@@ -57,7 +59,8 @@ class Schema extends Table
     public static function dropDatabase(string $db)
     {
         self::$dropDatabase = true;
-        self::$statement = "DROP DATABASE IF EXISTS $db";
+        // self::$statement = self::DROP . " DATABASE IF EXISTS $db";
+        self::$statement = self::DROP . " DATABASE  $db";
         self::$createDb = true;
         return self::save();
     }
@@ -69,28 +72,38 @@ class Schema extends Table
     public static function save()
     {
         $result = new \stdClass;
-        self::$connection = new Connector(self::$db);
-        if (self::$rename || self::$createDb || self::$dropDatabase || self::$alter) {
-            $stmt = self::$connection->prepare(self::$statement);
-            $result->executed =  $stmt->execute();
-            self::reset();
+        $result->executed = false;
+        $result->errorInfo = json_decode(json_encode([
+            "errorCode" => null,
+            "errorMessage" => null,
+        ]));
+        try {
+            self::$connection = new Connector(self::$db);
+            if (self::$rename || self::$createDb || self::$dropDatabase || self::$alter) {
+                $result->executed  = Execute::save(self::$connection, self::$statement);
+                self::reset();
+            }
+
+            if (self::$create) {
+                $old_statement = self::$statement;
+                self::$statement = "";
+                // echo self::$statement;
+                foreach (self::$Schema as $key => $value) {
+                    if (strpos($value, "NULL") === false)
+                        self::$statement .= $key . " " . trim($value) . " " . self::$is_null  . ",\n";
+                    else
+                        self::$statement .= $key . " " . trim($value) . ",\n";
+                }
+                self::$statement =  $old_statement . self::CREATE . " TABLE IF NOT EXISTS `" . self::$table . "`(" . substr(self::$statement, 0, -2) . ")";
+                $result->executed  = Execute::save(self::$connection, self::$statement);
+                self::reset();
+            }
+        } catch (\Exception $e) {
+            // print_r($e);
+            $result->errorInfo->errorCode = $e->errorInfo[1];
+            $result->errorInfo->errorMessage = $e->errorInfo[2];
         }
 
-        if (self::$create) {
-            $old_statement = self::$statement;
-            self::$statement = "";
-            // echo self::$statement;
-            foreach (self::$Schema as $key => $value) {
-                if (strpos($value, "NULL") === false)
-                    self::$statement .= $key . " " . trim($value) . " " . self::$is_null  . ",\n";
-                else
-                    self::$statement .= $key . " " . trim($value) . ",\n";
-            }
-            self::$statement =  $old_statement . "CREATE TABLE IF NOT EXISTS `" . self::$table . "`(" . substr(self::$statement, 0, -2) . ")";
-            $stmt = self::$connection->prepare(self::$statement);
-            $result->executed =  $stmt->execute();
-            self::reset();
-        }
 
         return $result;
     }
@@ -100,10 +113,6 @@ class Schema extends Table
         self::$rename = false;
     }
 }
-// $renamed = Schema::rename("users", "users1");
-$result = Schema::create("acc", function ($table) {
-    $table->increment("id")->primaryKey();
-    $table->string("email");
-    // print_r($table);
-});
-print_r($result);
+
+$results = Schema::dropDatabase("test2", "users");
+print_r($results);

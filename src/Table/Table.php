@@ -213,62 +213,62 @@ class Table extends AlterTable
     }
     public function onDelete($column)
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE $column ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " $column ";
         return $this;
     }
     public function onUpdate($column)
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE $column ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " $column ";
         return $this;
     }
     public function onDeleteCascade()
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE CASCADE ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " CASCADE ";
         return $this;
     }
     public function onUpdateCascade()
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE CASCADE ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " CASCADE ";
         return $this;
     }
     public function onDeleteSetNull()
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE SET NULL ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " SET NULL ";
         return $this;
     }
     public function onUpdateSetNull()
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE SET NULL ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " SET NULL ";
         return $this;
     }
     public function onDeleteNoAction()
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE NO ACTION ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " NO ACTION ";
         return $this;
     }
     public function onUpdateNoAction()
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE NO ACTION ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " NO ACTION ";
         return $this;
     }
     public function onDeleteSetDefault()
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE SET DEFAULT ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " SET DEFAULT ";
         return $this;
     }
     public function onUpdateSetDefault()
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE SET DEFAULT ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " SET DEFAULT ";
         return $this;
     }
     public function onDeleteRestrict()
     {
-        $this->schema[$this->itemIndex] .= "ON DELETE RESTRICT ";
+        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " RESTRICT ";
         return $this;
     }
     public function onUpdateRestrict()
     {
-        $this->schema[$this->itemIndex] .= "ON UPDATE RESTRICT ";
+        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " RESTRICT ";
         return $this;
     }
 
@@ -280,7 +280,7 @@ class Table extends AlterTable
     {
         $this->timestamps = true;
         $this->schema["created_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ";
-        $this->schema["updated_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP ";
+        $this->schema["updated_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ON " . static::UPDATE . " CURRENT_TIMESTAMP ";
         return $this;
     }
 
@@ -315,7 +315,6 @@ class Table extends AlterTable
     {
         self::$connection =
             self::$statement = "SHOW TABLES LIKE '$tableName'";
-        print_r(self::$connection);
         // $stmt = self::$connection->prepare(self::$statement);
         // $stmt->execute();
         // print_r($stmt->rowCount());

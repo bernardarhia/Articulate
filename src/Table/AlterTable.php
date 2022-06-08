@@ -2,7 +2,11 @@
 
 namespace App\Table;
 
-class AlterTable
+use App\Command\Command;
+
+include_once __DIR__ . "/../Commands/Commands.php";
+
+class AlterTable extends Command
 {
     static protected $connection;
     static public $tableName;
@@ -31,11 +35,11 @@ class AlterTable
             $tableName = self::$tableName;
             // alter table if not exists $tableName drop column $column;
 
-            self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `$column`";
+            self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " COLUMN `$column`";
         } else if (gettype($column) == "array") {
             $tableName = self::$tableName;
-            $columns = implode(",DROP COLUMN ", $column);
-            self::$statement = "ALTER TABLE `$tableName` DROP COLUMN $columns";
+            $columns = implode("," . self::DROP . " COLUMN ", $column);
+            self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " COLUMN $columns";
         }
         return new static;
     }
@@ -43,28 +47,28 @@ class AlterTable
     public function dropForeignKey($column)
     {
         $tableName = $this->tableName;
-        self::$statement = "ALTER TABLE `$tableName` DROP FOREIGN KEY `$column`";
+        self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " FOREIGN KEY `$column`";
         return new static;
     }
 
-    public function dropPrimaryKey()
+    public  function dropPrimaryKey()
     {
         $tableName = $this->tableName;
-        self::$statement = "ALTER TABLE `$tableName` DROP PRIMARY KEY";
+        self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " PRIMARY KEY";
         return new static;
     }
 
     public function dropUniqueKey($column)
     {
         $tableName = $this->tableName;
-        self::$statement = "ALTER TABLE `$tableName` DROP UNIQUE `$column`";
+        self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " UNIQUE `$column`";
         return new static;
     }
 
     public function dropTimestamps()
     {
         $tableName = self::$tableName;
-        self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `created_at`";
+        self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . "  COLUMN `created_at`";
         self::$statement .= ", DROP COLUMN `updated_at`";
         return new static;
     }
@@ -72,30 +76,29 @@ class AlterTable
     public function dropSoftDeletes()
     {
         $tableName = $this->tableName;
-        self::$statement = "ALTER TABLE `$tableName` DROP COLUMN `deleted_at`";
+        self::$statement = self::ALTER . " TABLE `$tableName` " . self::DROP . " COLUMN `deleted_at`";
         return new static;
     }
 
     public static function renameColumn($oldColumn, $newColumn)
     {
         $tableName = self::$tableName;
-        self::$statement = "ALTER TABLE `$tableName` CHANGE `$oldColumn` `$newColumn`";
+        self::$statement = self::ALTER . " TABLE `$tableName` CHANGE `$oldColumn` `$newColumn`";
         return new static;
     }
     public static function drop($tableName)
     {
-        self::$statement = "DROP TABLE $tableName";
-        return new static;
+        self::$statement = self::DROP . " TABLE $tableName";
     }
     public static function dropIfExists($tableName)
     {
-        self::$statement = "DROP TABLE IF EXISTS $tableName";
+        self::$statement = self::DROP . " TABLE IF EXISTS $tableName";
         return new static;
     }
     public function truncate()
     {
 
-        self::$statement = "TRUNCATE TABLE " . self::$tableName;
+        self::$statement = self::TRUNCATE . " TABLE " . self::$tableName;
         return new static;
     }
     public function hasColumn($column)

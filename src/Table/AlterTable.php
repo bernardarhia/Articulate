@@ -20,11 +20,13 @@ class AlterTable extends Command
     static protected $create = false;
     static protected $alter = false;
     static protected $db = null;
-    public static function table($tableName, $callback)
+    public static function table($tableName, $callback = null)
     {
         self::$alter = true;
-        self::$tableName = $tableName;
-        $callback(new self);
+        if (is_callable($callback)) {
+            self::$tableName = $tableName;
+            $callback(new self);
+        }
         return new static;
     }
 

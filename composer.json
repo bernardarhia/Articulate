@@ -1,6 +1,6 @@
 {
-    "name": "everich/api-router",
-    "description": "Simple PHP Router for writing apis",
+    "name": "Articulate",
+    "description": "A simple but comprehensive ORM for building robust applications with ease.",
     "type": "project",
     "autoload": {
         "psr-4": {

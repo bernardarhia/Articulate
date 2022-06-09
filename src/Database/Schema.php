@@ -99,11 +99,9 @@ class Schema extends Table
                 self::reset();
             }
         } catch (\Exception $e) {
-            // print_r($e);
             $result->errorInfo->errorCode = $e->errorInfo[1];
             $result->errorInfo->errorMessage = $e->errorInfo[2];
         }
-
 
         return $result;
     }
@@ -113,6 +111,3 @@ class Schema extends Table
         self::$rename = false;
     }
 }
-
-$results = Schema::dropDatabase("test2", "users");
-print_r($results);

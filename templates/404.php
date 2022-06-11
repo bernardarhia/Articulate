@@ -1,2 +1,0 @@
-<h1><?= $title ?></h1>
-<p>The requested URL was not found on this server.</p>

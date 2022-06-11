@@ -51,6 +51,8 @@ class Router
             if (count($path) !== count($cutUrls)) continue;
             if (preg_match_all("/:\w+/i", $handler['path'], $matches)) {
 
+                print_r($matches);
+                return;
                 //    find and replace all :param with the value from the
                 $request->params = [];
                 for ($i = 0; $i < count($cutUrls); $i++) {
@@ -65,6 +67,12 @@ class Router
             if ($handler['path'] === $requestPath && $handler['method'] === $method) {
                 $callback = $handler['handler'];
             }
+        }
+
+
+        if (is_array($callback)) {
+            $className = new $callback[0];
+            $callback = [$className, $callback[1]];
         }
 
         if (!$callback) {

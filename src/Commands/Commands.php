@@ -12,4 +12,5 @@ class Command
     const CREATE = "CREATE";
     const DROP = "DROP";
     const RENAME = "RENAME";
+    const ADD = "ADD";
 }

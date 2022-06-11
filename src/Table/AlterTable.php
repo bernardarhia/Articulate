@@ -33,6 +33,7 @@ class AlterTable extends Command
     public function dropColumn($column)
     {
 
+        print_r(self::$tableName);
         if (gettype($column) == "string") {
             $tableName = self::$tableName;
             // alter table if not exists $tableName drop column $column;

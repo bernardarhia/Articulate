@@ -1,8 +1,6 @@
 <?php
 
-use App\Database\Schema as DatabaseSchema;
+use Controllers\Home;
 
-$router->get("/", function () {
-    view("home");
-    DatabaseSchema::connection("altisend")->rename("users", "user1")->save();
-});
+include_once __DIR__ . "/../controllers/HomeController.php";
+$router->get("/", [Home::class, "index"]);

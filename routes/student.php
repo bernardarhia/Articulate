@@ -8,14 +8,7 @@ $router->get("/student/add", function () {
 
 
 // POST ROUTES
-$router->post("/student/add", function ($request, $response) {
-    $name = $request->body->name;
-    $age = $request->body->age;
-    $request->session([
-        "data" => ["name" => "Bernard", "id" => 1, "isAuth" => true],
-        "path" => "",
-        "httpOnly" => true,
-        "secure" => true,
-        "expiresAt" => "2022-05-01"
-    ]);
+$router->post("/student/:id", function ($request, $response) {
+    $name = $request->body->name ?? null;
+    $age = $request->body->age ?? null;
 });

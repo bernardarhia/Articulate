@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Database;
+namespace Articulate\Database;
 
 use PDO as DBConnector;
 use stdClass;
-use  App\Database\Connector;
-use App\Dotenv;
+use  Articulate\Database\Connector;
+use Articulate\Dotenv;
 
 include_once __DIR__ . "/Connector.php";
 class DB
@@ -25,7 +25,7 @@ class DB
     public function __construct()
     {
 
-        $env = new Dotenv(__DIR__ . '/../../.env');
+        $env = new Dotenv($_SERVER['DOCUMENT_ROOT'] . "/.env");
         $env->load();
         self::$db = !self::$db || is_null(self::$db) ? $_ENV['DB_NAME'] : self::$db;
         self::$connection = new Connector(self::$db);
@@ -258,6 +258,8 @@ class DB
     }
     static function beginTransaction()
     {
+        print_r(self::$connection);
+        return;
         self::$connection->beginTransaction();
     }
     static function commit()
@@ -270,11 +272,11 @@ class DB
     }
     static function lastInsertId()
     {
+
         return self::$connection->lastInsertId();
     }
 }
 
-// $results = DB::select("id", "user_id")->from("accounts")->where("user_id", "=", 3)->result();
-DB::beginTransaction();
-$results = DB::raw("select id from accounts where type = :type ", ["type" => "primary"]);
+
+$results = DB::connection("altisend")->raw("select id from accounts where type = :type ", ["type" => "primary"]);
 print_r($results);

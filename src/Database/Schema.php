@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Database;
+namespace Articulate\Database;
 
-use App\Command\Execute;
-use App\Table\Table;
+use Articulate\Command\Execute;
+use Articulate\Table\Table;
 
 include_once __DIR__ . "/../Table/Table.php";
 include_once __DIR__ . "/../Database/Connector.php";

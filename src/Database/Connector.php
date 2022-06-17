@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Database;
+namespace Articulate\Database;
 
-use App\Dotenv;
+use Articulate\Dotenv;
 use PDO as DBConnector;
 
 include_once __DIR__ . "/../Dotenv.php";
@@ -12,7 +12,7 @@ class Connector extends DBConnector
     private $connection;
     public function __construct(string $dbName = null, string $dbHost = null, string $dbUser = null, string $dbPass = '')
     {
-        $env = new Dotenv(__DIR__ . '/../../.env');
+        $env = new Dotenv($_SERVER['DOCUMENT_ROOT'] . "/.env");
         $env->load();
         $this->dbName = $dbName;
         $this->dbName = !$dbName || is_null($dbName) ? $_ENV['DB_NAME'] : $dbName;

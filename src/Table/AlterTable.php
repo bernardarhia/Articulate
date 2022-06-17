@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Table;
+namespace Articulate\Table;
 
-use App\Command\Command;
+use Articulate\Command\Command;
 
 include_once __DIR__ . "/../Commands/Commands.php";
 

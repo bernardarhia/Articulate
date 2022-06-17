@@ -1,10 +1,10 @@
 {
-    "name": "Articulate",
+    "name": "bernard-arhia/articulate",
     "description": "A simple but comprehensive ORM for building robust applications with ease.",
     "type": "project",
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "":"src/"
         }
     },
     "authors": [

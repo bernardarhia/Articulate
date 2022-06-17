@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Table;
+namespace Articulate\Table;
 
-use App\Table\AlterTable;
+use Articulate\Table\AlterTable;
 
 include_once __DIR__ . "/../Table/AlterTable.php";
 class Table extends AlterTable

@@ -2,23 +2,15 @@
 
 namespace Articulate\Table;
 
-use Articulate\Table\AlterTable;
+use Articulate\Articulate;
+use Articulate\Commands\KEYWORDS;
 
-include_once __DIR__ . "/../Table/AlterTable.php";
-class Table extends AlterTable
+class Table extends Articulate
 {
     // public bool $timestamps =  true;
     private $itemIndex = null;
     protected static $is_null = "NOT NULL";
     protected $schema = [];
-
-    static function connection(string $db)
-    {
-        self::$statement = "CREATE DATABASE IF NOT EXISTS $db;USE $db;";
-        self::$db = $db;
-        return new static;
-    }
-
     // ==============THE DATA TYPES OF THE DATABASE==============
 
 
@@ -213,62 +205,62 @@ class Table extends AlterTable
     }
     public function onDelete($column)
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " $column ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " $column ";
         return $this;
     }
     public function onUpdate($column)
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " $column ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " $column ";
         return $this;
     }
     public function onDeleteCascade()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " CASCADE ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " CASCADE ";
         return $this;
     }
     public function onUpdateCascade()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " CASCADE ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " CASCADE ";
         return $this;
     }
     public function onDeleteSetNull()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " SET NULL ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " SET NULL ";
         return $this;
     }
     public function onUpdateSetNull()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " SET NULL ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " SET NULL ";
         return $this;
     }
     public function onDeleteNoAction()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " NO ACTION ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " NO ACTION ";
         return $this;
     }
     public function onUpdateNoAction()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " NO ACTION ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " NO ACTION ";
         return $this;
     }
     public function onDeleteSetDefault()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " SET DEFAULT ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " SET DEFAULT ";
         return $this;
     }
     public function onUpdateSetDefault()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " SET DEFAULT ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " SET DEFAULT ";
         return $this;
     }
     public function onDeleteRestrict()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::DROP . " RESTRICT ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::DROP . " RESTRICT ";
         return $this;
     }
     public function onUpdateRestrict()
     {
-        $this->schema[$this->itemIndex] .= "ON " . static::UPDATE . " RESTRICT ";
+        $this->schema[$this->itemIndex] .= "ON " . KEYWORDS::UPDATE . " RESTRICT ";
         return $this;
     }
 
@@ -280,7 +272,7 @@ class Table extends AlterTable
     {
         $this->timestamps = true;
         $this->schema["created_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ";
-        $this->schema["updated_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ON " . static::UPDATE . " CURRENT_TIMESTAMP ";
+        $this->schema["updated_at"] = "DATETIME DEFAULT CURRENT_TIMESTAMP ON " . KEYWORDS::UPDATE . " CURRENT_TIMESTAMP ";
         return $this;
     }
 
@@ -313,10 +305,5 @@ class Table extends AlterTable
     }
     public static function hasTable($tableName)
     {
-        self::$connection =
-            self::$statement = "SHOW TABLES LIKE '$tableName'";
-        // $stmt = self::$connection->prepare(self::$statement);
-        // $stmt->execute();
-        // print_r($stmt->rowCount());
     }
 }

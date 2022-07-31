@@ -2,7 +2,9 @@
 
 namespace Articulate\Command;
 
-class Command
+use Articulate\Articulate;
+
+class Command extends Articulate
 {
     const ALTER = "ALTER";
     const SELECT = "SELECT";

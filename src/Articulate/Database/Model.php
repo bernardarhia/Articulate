@@ -284,7 +284,9 @@ class Model extends Articulate
         if (is_callable($callback)) {
             $callback((object)self::$error);
         }
-        return (object) self::$result;
+        if (!empty(self::$result)) return (object) self::$result;
+
+        return false;
     }
 
     protected static function removeAndOr($query)

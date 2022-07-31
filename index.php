@@ -20,5 +20,5 @@ $user = Schema::create("test", function ($table) {
 class Members extends Model
 {
 }
-$user = Members::one()->where("id", 1)->get();
+$user = Members::one()->join("students", ['members.id' => "students.id"])->where("id", 1)->getQuery();
 print_r($user);

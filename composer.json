@@ -1,18 +1,25 @@
 {
     "name": "bernard-arhia/articulate",
     "description": "A simple but comprehensive ORM for building robust applications with ease.",
-    "type": "project",
+    "type": "library",
+    "keywords": ["query", "db", "php-orm", "orm", "api", "php", "mongoose php"],
     "autoload": {
         "psr-4": {
             "Articulate\\":"src/Articulate"
         }
     },
-    "authors": [
-        {
-            "name": "Bernard Arhia",
-            "email": "55264725+bernardarhia@users.noreply.github.com"
+    "autoload-dev": {
+        "psr-4": {
+            "Articulate\\": "src/Articulate"
         }
-    ],
-    "minimum-stability": "stable",
-    "require": {}
+    },
+    "author":{
+        "name":"Bernard Arhia",
+        "email":"bernardarhia@gmail.com",
+        "role":"Developer"
+    },
+    "license":"MIT",
+    "require" : {
+        "php" : ">=8.0.0"
+    }
 }
